@@ -1,4 +1,4 @@
-package com.wldrmnd.thumbnail.api
+package com.wldrmnd.thumbnail.processor
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
