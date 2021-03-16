@@ -6,19 +6,27 @@ services:
       - spring.redis.host=redis
     build:
       context: ./api
-      dockerfile: dockerfile
+      dockerfile: api
     ports:
       - "87:89"
     depends_on:
       - redis
+    volumes:
+      - /Users/egorbarkovsky/DEV/java/imagesss/api/:/home/files/uploads/
+      - /Users/egorbarkovsky/DEV/java/imagesss/api/api:/home/files/uploads/new
   processor:
     environment:
       - spring.redis.host=redis
     build:
       context: ./processor
-      dockerfile: dockerfile
+      dockerfile: processor
     depends_on:
       - redis
       - api
+    volumes:
+      - /Users/egorbarkovsky/DEV/java/imagesss/processor:/home/files/uploads
+      - /Users/egorbarkovsky/DEV/java/imagesss/processor/processor:/home/files/uploads/new
   redis:
     image: "redis:alpine"
+    ports:
+      - "6379:6379"

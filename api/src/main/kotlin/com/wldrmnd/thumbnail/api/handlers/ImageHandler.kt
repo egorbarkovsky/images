@@ -28,8 +28,7 @@ import kotlin.random.Random
 
 
 @Component
-class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository
-                   , private val webClient: WebClient,
+class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository,
                    private val redisTemplate: ReactiveRedisOperations<String, ImagesModel>
 ) {
 
@@ -38,21 +37,6 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository
 
     @Value("\${file.path}")
     private val path: String? = null
-
-    suspend fun addNewImage(request: ServerRequest): ServerResponse = coroutineScope {
-        //val (_, path) = request.awaitBody<ImagesModel>()
-//        val path = async {
-//            webClient
-//                    .post()
-//                    .uri("/upload")
-////                    .body(BodyInserters.FormInserter)
-//                    .retrieve()
-//                    .awaitBody<String>()
-//        }.await()
-        val path = "test"
-        val resp: Int = imagesRepositoryRedisImpl.addNewImage(path)
-        ServerResponse.ok().bodyValueAndAwait(resp)
-    }
 
     suspend fun findOne(request: ServerRequest): ServerResponse {
         val id = request.pathVariable("id").toInt()
@@ -66,30 +50,6 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository
             .bodyValueAndAwait(imageById)
     }
 
-    suspend fun findAll(request: ServerRequest): ServerResponse =
-        ServerResponse.ok().json().bodyAndAwait(imagesRepositoryRedisImpl.getAllImages())
-
-    suspend fun findOneInMem(request: ServerRequest): ServerResponse = coroutineScope {
-        val id = request.pathVariable("id").toInt()
-
-        val image = async {
-            imagesRepositoryRedisImpl.getImagesById(id)
-        }
-
-        val quantity = async {
-            webClient
-                .get()
-                .uri("/v1/image/$id/available")
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .awaitBody<Int>()
-        }
-        ServerResponse
-            .ok()
-            .json()
-            .bodyValueAndAwait(ImageAvailableView(image.await()!!, quantity.await()))
-    }
-
     fun upload(request: ServerRequest): Mono<ServerResponse> {
 
         return request.body(BodyExtractors.toMultipartData()).flatMap { parts ->
@@ -98,7 +58,7 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository
             saveFile(filePart)
             val fileName = filePart.filename()
             val id = Random.nextInt()
-            val image = ImagesModel(id, "$path$fileName")
+            val image = ImagesModel(id,"$fileName","$path$fileName")
             redisTemplate.convertAndSend(topic!!, image).subscribe()
             val data = redisTemplate.opsForValue().set(id.toString(), image)
             data.flatMap { it ->
@@ -112,7 +72,6 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository
             }
         }
     }
-
 
     private fun saveFile(filePart: FilePart): Mono<File>? {
         val target: Path = Paths.get(path).resolve(filePart.filename())
