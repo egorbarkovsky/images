@@ -7,5 +7,5 @@
 
 ## Endpoints: 
 
-POST /upload 
-GET /v1/images/${id}
+- POST /upload 
+- GET /v1/images/${id}
