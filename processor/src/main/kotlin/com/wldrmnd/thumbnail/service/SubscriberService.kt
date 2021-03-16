@@ -19,7 +19,6 @@ import kotlin.jvm.Throws
 
 @Service
 class SubscriberService {
-
     @Autowired
     private val reactiveRedisTemplate: ReactiveRedisOperations<String, ImagesModel>? = null
 
@@ -44,14 +43,15 @@ class SubscriberService {
     }
 
     fun resize(file: String, imageName : String,width: Int, height: Int) {
-        logger.info(" file path $file")
+        println(" file path $file")
         // val inputStream: InputStream
 
         try {
-            var image:BufferedImage  = ImageIO.read(File("$file"))
-            image = Scalr.
+            val image:BufferedImage  = ImageIO.read(File("$file"))
+            val imageScaled:BufferedImage = Scalr.
             resize(image, Scalr.Method.AUTOMATIC, Scalr.Mode.AUTOMATIC, width, height, Scalr.OP_ANTIALIAS)
-            ImageIO.write(image,"png", File(newDir+imageName))
+            ImageIO.write(imageScaled, "png",File(file))
+            imageScaled.flush()
         } catch (e: IOException) {
             println(e.message)
         } catch (e: IllegalArgumentException) {
@@ -60,8 +60,4 @@ class SubscriberService {
         }
     }
 
-    companion object {
-
-        private val logger = getLogger(SubscriberService::class.java)
-    }
 }

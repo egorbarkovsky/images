@@ -12,8 +12,8 @@ services:
     depends_on:
       - redis
     volumes:
-      - /Users/egorbarkovsky/DEV/java/imagesss:/home/files/uploads/
-      - /Users/egorbarkovsky/DEV/java/imagesss/new:/home/files/uploads/new/
+      - /Users/egorbarkovsky/DEV/java/imagesss:/tmp
+      - /Users/egorbarkovsky/DEV/java/imagesss/new:/tmp/new
   processor:
     environment:
       - spring.redis.host=redis
@@ -24,8 +24,8 @@ services:
       - redis
       - api
     volumes:
-      - /Users/egorbarkovsky/DEV/java/imagesss:/home/files/uploads/
-      - /Users/egorbarkovsky/DEV/java/imagesss/new:/home/files/uploads/new/
+      - /Users/egorbarkovsky/DEV/java/imagesss:/tmp
+      - /Users/egorbarkovsky/DEV/java/imagesss/new:/tmp/new
   redis:
     image: "redis:alpine"
     ports:

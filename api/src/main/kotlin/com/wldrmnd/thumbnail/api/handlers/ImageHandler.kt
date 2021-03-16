@@ -31,7 +31,8 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository,
     private val topic: String? = null
 
     @Value("\${file.path}")
-    private val path: String? = null
+    lateinit var  path: String
+
 
     suspend fun findOne(request: ServerRequest): ServerResponse {
         val id = request.pathVariable("id").toInt()
@@ -39,7 +40,6 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository,
         val imageById = imagesRepositoryRedisImpl.getImagesById(id)
             ?: return ServerResponse.notFound().buildAndAwait()
 
-        logger.info("Image by $id id has been found successfully")
         return ServerResponse
             .ok()
             .json()
@@ -50,12 +50,14 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository,
 
         return request.body(BodyExtractors.toMultipartData()).flatMap { parts ->
             val map: Map<String, Part> = parts.toSingleValueMap()
-            val filePart: FilePart = map["file"]!! as FilePart
-            saveFile(filePart)
-            val fileName = filePart.filename()
-            val id = Random.nextInt()
-            val image = ImagesModel(id,"$fileName","$path$fileName")
 
+            val filePart: FilePart = map["file"]!! as FilePart
+
+            val fileName = filePart.filename()
+            val filePath ="/tmp/$fileName"
+            filePart.transferTo(File("/tmp/$fileName")).subscribe()
+            val id = Random.nextInt()
+            val image = ImagesModel(id,fileName,filePath)
             redisTemplate.convertAndSend(topic!!, image).subscribe()
             val data = redisTemplate.opsForValue().set(id.toString(), image)
             data.flatMap { it ->
@@ -63,23 +65,10 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository,
                 if (!g) {
                     throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)
                 }
-                logger.info("Image has been uploaded successfully ${image.path}")
+                println(it)
                 redisTemplate.opsForList().rightPush("image", image)
                 ServerResponse.ok().body(BodyInserters.fromObject(id))
             }
-        }
-    }
-
-    private fun saveFile(filePart: FilePart): Mono<File>? {
-        val target: Path = Paths.get(path).resolve(filePart.filename())
-        logger.info(path + " !!!")
-        return try {
-            Files.deleteIfExists(target)
-            val file: File = Files.createFile(target).toFile()
-            filePart.transferTo(file)
-                .map { r: Void? -> file }
-        } catch (e: IOException) {
-            throw RuntimeException(e)
         }
     }
 
