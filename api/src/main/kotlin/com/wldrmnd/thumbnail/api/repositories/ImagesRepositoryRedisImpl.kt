@@ -1,9 +1,13 @@
 package com.wldrmnd.thumbnail.api.repositories
 
 import com.wldrmnd.thumbnail.api.models.ImagesModel
+import com.wldrmnd.thumbnail.api.util.getLogger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import org.springframework.data.redis.core.*
+import org.springframework.data.redis.core.ReactiveRedisOperations
+import org.springframework.data.redis.core.rangeAsFlow
+import org.springframework.data.redis.core.rightPushAndAwait
+import org.springframework.data.redis.core.setAndAwait
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Repository
 import org.springframework.web.server.ResponseStatusException
@@ -22,7 +26,7 @@ class ImagesRepositoryRedisImpl(private val reactiveRedisTemplate: ReactiveRedis
     override suspend fun addNewImage(path: String):Int {
         val id = Random.nextInt()
 
-        println(" creating new image with id = $id")
+        logger.info("Creating new image with id = $id")
 
         val image = ImagesModel(id,path)
 
@@ -41,5 +45,10 @@ class ImagesRepositoryRedisImpl(private val reactiveRedisTemplate: ReactiveRedis
         return reactiveRedisTemplate
             .opsForList()
             .rangeAsFlow("images",0,-1)
+    }
+
+    companion object {
+
+        private val logger = getLogger(ImagesRepositoryRedisImpl::class.java)
     }
 }

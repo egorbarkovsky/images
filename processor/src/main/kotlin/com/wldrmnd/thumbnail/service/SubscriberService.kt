@@ -1,6 +1,7 @@
 package com.wldrmnd.thumbnail.service
 
 import com.wldrmnd.thumbnail.models.ImagesModel
+import com.wldrmnd.thumbnail.util.getLogger
 import org.imgscalr.Scalr
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -35,10 +36,9 @@ class SubscriberService {
                 it.message
             }
             ?.subscribe {
-                println(it)
-//                    getThumbnail(it.path,it.name)
+                logger.info(it.toString())
                 val file = File(it.path)
-                resize(file,24,20)
+                resize(file,32,32)
             }
 
     }
@@ -55,8 +55,7 @@ class SubscriberService {
             saveToJPG(image, file!!)
             image.flush()
         } catch (e: IOException) {
-            println(" resize error")
-            println(e.message)
+            logger.warn("Resize error")
             throw e
         } catch (e: IllegalArgumentException) {
             throw e
@@ -71,4 +70,9 @@ class SubscriberService {
         newImage.flush()
     }
 
+
+    companion object {
+
+        private val logger = getLogger(SubscriberService::class.java)
+    }
 }

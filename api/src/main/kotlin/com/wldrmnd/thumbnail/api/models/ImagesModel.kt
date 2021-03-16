@@ -6,6 +6,6 @@ data class ImagesModel (
 
         @Id
         val id: Int = 0,
-        val name:String="",
-        val path:String = ""
+        val name: String = "",
+        val path: String = ""
 )

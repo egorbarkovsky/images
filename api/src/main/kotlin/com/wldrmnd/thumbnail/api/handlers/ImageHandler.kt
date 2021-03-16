@@ -1,21 +1,16 @@
 package com.wldrmnd.thumbnail.api.handlers
 
-import com.wldrmnd.thumbnail.api.models.ImageAvailableView
 import com.wldrmnd.thumbnail.api.models.ImagesModel
 import com.wldrmnd.thumbnail.api.repositories.ImagesRepository
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import com.wldrmnd.thumbnail.api.util.getLogger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.ReactiveRedisOperations
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.http.codec.multipart.Part
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyExtractors
 import org.springframework.web.reactive.function.BodyInserters
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.reactive.function.server.*
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
@@ -44,6 +39,7 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository,
         val imageById = imagesRepositoryRedisImpl.getImagesById(id)
             ?: return ServerResponse.notFound().buildAndAwait()
 
+        logger.info("Image by $id id has been found successfully")
         return ServerResponse
             .ok()
             .json()
@@ -59,6 +55,7 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository,
             val fileName = filePart.filename()
             val id = Random.nextInt()
             val image = ImagesModel(id,"$fileName","$path$fileName")
+
             redisTemplate.convertAndSend(topic!!, image).subscribe()
             val data = redisTemplate.opsForValue().set(id.toString(), image)
             data.flatMap { it ->
@@ -66,7 +63,7 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository,
                 if (!g) {
                     throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)
                 }
-                println(it)
+                logger.info("Image $it has been uploaded successfully")
                 redisTemplate.opsForList().rightPush("image", image)
                 ServerResponse.ok().body(BodyInserters.fromObject(id))
             }
@@ -83,5 +80,10 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository,
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
+    }
+
+    companion object {
+
+        private val logger = getLogger(ImageHandler::class.java)
     }
 }

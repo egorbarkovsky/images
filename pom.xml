@@ -39,6 +39,7 @@
         </repository>
     </repositories>
 
+
     <modules>
         <module>api</module>
         <module>processor</module>
@@ -68,6 +69,11 @@
                         <groupId>org.jetbrains.kotlin</groupId>
                         <artifactId>kotlin-maven-allopen</artifactId>
                         <version>${kotlin.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                        <version>1.7.30</version>
                     </dependency>
                 </dependencies>
             </plugin>

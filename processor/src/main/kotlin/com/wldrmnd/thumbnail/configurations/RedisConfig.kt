@@ -18,6 +18,7 @@ class RedisConfig(private val factory: RedisConnectionFactory) {
 
     @Bean
     fun reactiveRedisTemplate(factory: LettuceConnectionFactory): ReactiveRedisOperations<String, ImagesModel> {
+
         return ReactiveRedisTemplate(
             factory,
             RedisSerializationContext
