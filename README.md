@@ -8,4 +8,4 @@
 ## Endpoints: 
 
 - POST /upload 
-- GET /v1/images/${id}
+- GET /images/v1/${id}
