@@ -14,6 +14,7 @@ import java.io.File
 import java.io.IOException
 import javax.annotation.PostConstruct
 import javax.imageio.ImageIO
+import kotlin.jvm.Throws
 
 
 @Service
@@ -36,40 +37,28 @@ class SubscriberService {
                 it.message
             }
             ?.subscribe {
-                logger.info(it.toString())
-                val file = File(it.path)
-                resize(file,32,32)
+
+                resize(it.path,it.name,24,20)
             }
 
     }
 
-    fun resize(file: File?, width: Int, height: Int) {
-        var image: BufferedImage
+    fun resize(file: String, imageName : String,width: Int, height: Int) {
+        logger.info(" file path $file")
+        // val inputStream: InputStream
+
         try {
-            image = ImageIO.read(file)
-            image = Scalr.resize(image,
-                Scalr.Method.ULTRA_QUALITY,
-                Scalr.Mode.FIT_EXACT,
-                width,
-                height)
-            saveToJPG(image, file!!)
-            image.flush()
+            var image:BufferedImage  = ImageIO.read(File("$file"))
+            image = Scalr.
+            resize(image, Scalr.Method.AUTOMATIC, Scalr.Mode.AUTOMATIC, width, height, Scalr.OP_ANTIALIAS)
+            ImageIO.write(image,"png", File(newDir+imageName))
         } catch (e: IOException) {
-            logger.warn("Resize error")
-            throw e
+            println(e.message)
         } catch (e: IllegalArgumentException) {
+            println(e.message)
             throw e
         }
     }
-
-    @Throws(IOException::class)
-    private fun saveToJPG(image: BufferedImage, file: File) {
-        val newImage = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_RGB)
-        newImage.createGraphics().drawImage(image, 0, 0, Color.WHITE, null)
-        ImageIO.write(newImage, "jpg", file)
-        newImage.flush()
-    }
-
 
     companion object {
 

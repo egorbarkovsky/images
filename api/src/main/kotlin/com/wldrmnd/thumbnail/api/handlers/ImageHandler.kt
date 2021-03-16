@@ -63,7 +63,7 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository,
                 if (!g) {
                     throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)
                 }
-                logger.info("Image $it has been uploaded successfully")
+                logger.info("Image has been uploaded successfully ${image.path}")
                 redisTemplate.opsForList().rightPush("image", image)
                 ServerResponse.ok().body(BodyInserters.fromObject(id))
             }
@@ -72,6 +72,7 @@ class ImageHandler(private val imagesRepositoryRedisImpl: ImagesRepository,
 
     private fun saveFile(filePart: FilePart): Mono<File>? {
         val target: Path = Paths.get(path).resolve(filePart.filename())
+        logger.info(path + " !!!")
         return try {
             Files.deleteIfExists(target)
             val file: File = Files.createFile(target).toFile()

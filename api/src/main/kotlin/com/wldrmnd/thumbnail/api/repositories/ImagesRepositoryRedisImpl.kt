@@ -14,7 +14,9 @@ import org.springframework.web.server.ResponseStatusException
 import kotlin.random.Random
 
 @Repository
-class ImagesRepositoryRedisImpl(private val reactiveRedisTemplate: ReactiveRedisOperations<String, ImagesModel>): ImagesRepository{
+class ImagesRepositoryRedisImpl(
+    private val reactiveRedisTemplate: ReactiveRedisOperations<String, ImagesModel>
+): ImagesRepository {
 
     override suspend fun getImagesById(id: Int): ImagesModel? {
         return reactiveRedisTemplate
