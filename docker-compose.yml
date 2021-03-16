@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  api:
+    environment:
+      - spring.redis.host=redis
+    build:
+      context: ./api
+      dockerfile: dockerfile
+    ports:
+      - "87:89"
+    depends_on:
+      - redis
+  processor:
+    environment:
+      - spring.redis.host=redis
+    build:
+      context: ./processor
+      dockerfile: dockerfile
+    depends_on:
+      - redis
+      - api
+  redis:
+    image: "redis:alpine"
