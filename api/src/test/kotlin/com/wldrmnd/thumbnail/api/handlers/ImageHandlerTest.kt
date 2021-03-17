@@ -1,38 +1,49 @@
 package com.wldrmnd.thumbnail.api.handlers
 
+import com.wldrmnd.thumbnail.api.data.dummyImage
 import com.wldrmnd.thumbnail.api.models.ImagesModel
-import com.wldrmnd.thumbnail.api.repositories.ImagesRepository
+import com.wldrmnd.thumbnail.api.repositories.ImageRepository
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import org.springframework.data.redis.core.ReactiveRedisOperations
-import org.springframework.web.reactive.function.server.ServerRequest
+import org.mockito.ArgumentMatchers.anyInt
+import org.springframework.web.reactive.function.BodyInserters
+import org.springframework.web.reactive.function.server.ServerResponse
+import reactor.core.publisher.Mono
 
-object ImageHandlerTest: Spek({
+class ImageHandlerTest : Spek({
 
-    describe("Image Handler"){
-        lateinit var imagesRepositoryRedisImpl: ImagesRepository
-        lateinit var redisTemplate: ReactiveRedisOperations<String, ImagesModel>
-        lateinit var imageHandler:ImageHandler
-        lateinit var request: ServerRequest
+    val imageRepo: ImageRepository = mock()
+    val imagesModel: ImagesModel = mock()
 
-        beforeGroup {
-            imageHandler = ImageHandler(imagesRepositoryRedisImpl,redisTemplate)
+    describe("getting data") {
+
+        val dummyImage = dummyImage
+
+        val response: Mono<ServerResponse> = ServerResponse.ok().body(BodyInserters.fromObject(10))
+
+
+        beforeEachGroup {
+            runBlocking {
+                whenever(imageRepo.getImagesById(anyInt())).thenReturn(dummyImage)
+            }
+            whenever(imageRepo.save(imagesModel))
+                .thenReturn(response)
         }
 
-        describe("fetch image by id"){
-
-
-            it("return 404"){
-                assert(true, { imageHandler.upload(request) })
+        it("get data calling the repository") {
+            runBlocking {
+                val test = imageRepo.getImagesById(2)
+                Assertions.assertEquals(test, dummyImage)
             }
         }
 
-        describe("upload"){
-            it("should return id"){
-//            assert(true, { imageHandler.findOne(request) })
-            }
+        it("testing image save repository"){
+            val test = imageRepo.save(imagesModel)
+            Assertions.assertNotEquals(test, ServerResponse.ok().body(BodyInserters.fromObject(10)))
         }
-
     }
-}
-)
+})

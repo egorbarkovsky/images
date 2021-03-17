@@ -8,25 +8,21 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.ReactiveRedisOperations
 import org.springframework.data.redis.listener.ChannelTopic
 import org.springframework.stereotype.Service
-import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.IOException
 import javax.annotation.PostConstruct
 import javax.imageio.ImageIO
-import kotlin.jvm.Throws
 
 
 @Service
 class SubscriberService {
+
     @Autowired
     private val reactiveRedisTemplate: ReactiveRedisOperations<String, ImagesModel>? = null
 
     @Value("\${topic.name.image-topic}")
     private val topic: String? = null
-
-    @Value("\${file.path.new}")
-    private val newDir: String? = null
 
     @PostConstruct
     private fun init() {
@@ -42,15 +38,19 @@ class SubscriberService {
 
     }
 
-    fun resize(file: String, imageName : String,width: Int, height: Int) {
-        println(" file path $file")
-        // val inputStream: InputStream
+
+    fun resize(file: String, imageName: String, width: Int, height: Int) {
+        logger.info("Process of resizing $imageName into 24x20 thumbnail")
 
         try {
-            val image:BufferedImage  = ImageIO.read(File("$file"))
-            val imageScaled:BufferedImage = Scalr.
-            resize(image, Scalr.Method.AUTOMATIC, Scalr.Mode.AUTOMATIC, width, height, Scalr.OP_ANTIALIAS)
-            ImageIO.write(imageScaled, "png",File(file))
+            val image: BufferedImage  = ImageIO.read(File("$file"))
+            val imageScaled: BufferedImage = Scalr.resize(image,
+                Scalr.Method.AUTOMATIC,
+                Scalr.Mode.AUTOMATIC,
+                width, height,
+                Scalr.OP_ANTIALIAS)
+
+            ImageIO.write(imageScaled, "png", File(file))
             imageScaled.flush()
         } catch (e: IOException) {
             println(e.message)
@@ -60,4 +60,9 @@ class SubscriberService {
         }
     }
 
+
+    companion object {
+
+        var logger = getLogger(SubscriberService::class.java)
+    }
 }

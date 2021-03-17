@@ -33,6 +33,7 @@ class ImagesRouteConfiguration {
                 })
     }
 
+
     companion object {
 
         private val logger = getLogger(ImagesRouteConfiguration::class.java)
